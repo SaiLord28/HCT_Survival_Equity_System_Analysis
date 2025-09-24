@@ -6,18 +6,23 @@
 
 ### <div align="center">Faculty of Systems Engineering</div>
 
+
 ### <div align="center">Authors</div>
  <div align="center">Sergio Nicolás Mendivelso - 20231020227 - snmendivelsom@udistrital.edu.co - @SaiLord28</div>
- <div align="center">Sergio lEONARDO Moreno Granado - 20242020091 - slmorenog@udistrital.edu.co - @slmorenog-ud</div>
+ <div align="center">Sergio Leonardo Moreno Granado - 20242020091 - slmorenog@udistrital.edu.co - @slmorenog-ud</div>
  <div align="center">Juan Manuel Otálora Hernandez - 20242020018 - jmotalorah@udistrital.edu.co - @otalorah</div>
  <div align="center">Juan Diego - 202 -  - @ </div>
+ 
  
 ---
 
 ## Table of Contents
-
-- [Workshops](#workshops)
-- [Contact Information](#contact-information)
+- [Projecto Overview](##project-overview)
+- [Objetives](##objetives)
+- [Technologies](##Technologies)
+- [Workshops](##workshops-summary)
+- [Final Version](##final-version)
+- [Conclusions](##conclusions)
 
 
 ## Project Overview:
@@ -28,7 +33,7 @@ Welcome to the Equity in post-HCT survival predictions project! This project was
 ### Objectives:
 - .
 
-### Technologies Used:
+### Technologies:
 
 - HTML, CSS, JavaScript for frontend development.
 - Python for backend development.
@@ -54,7 +59,7 @@ Welcome to the Equity in post-HCT survival predictions project! This project was
 
 .
 
-### Conclusions:
+## Conclusions:
 .
 
 
