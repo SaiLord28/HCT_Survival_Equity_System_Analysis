@@ -11,7 +11,7 @@
  <div align="center">Sergio Nicolás Mendivelso - 20231020227 - snmendivelsom@udistrital.edu.co - @SaiLord28</div>
  <div align="center">Sergio Leonardo Moreno Granado - 20242020091 - slmorenog@udistrital.edu.co - @slmorenog-ud</div>
  <div align="center">Juan Manuel Otálora Hernandez - 20242020018 - jmotalorah@udistrital.edu.co - @otalorah</div>
- <div align="center">Juan Diego - 202 -  - @ </div>
+ <div align="center">Juan Diego Moreno Ramos - 20242020009 - juandmorenor@udistrital.edu.co - @juandyi</div>
  
  
 ---
