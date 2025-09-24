@@ -27,8 +27,7 @@
 
 ## Project Overview:
 
-Welcome to the Equity in post-HCT survival predictions project! This project was developed as part of System Analysis course at Universidad Distrital Francisco José de Caldas. The goal of this project was...... PENDING
-
+Welcome to the Equity in post-HCT survival predictions project! This project was developed as part of System Analysis course at Universidad Distrital Francisco José de Caldas. The link of the project is https://www.kaggle.com/competitions/equity-post-HCT-survival-predictions. The goal of this project was...... PENDING
 
 ### Objectives:
 - .
