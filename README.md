@@ -17,7 +17,7 @@
 ---
 
 ## Table of Contents
-- [Project Overview](##project-overview)
+- [Project Overview](##Project-overview)
 - [Objetives](##objetives)
 - [Technologies](##Technologies)
 - [Workshops](##workshops-summary)
@@ -27,10 +27,19 @@
 
 ## Project Overview:
 
-Welcome to the Equity in post-HCT survival predictions project! This project was developed as part of System Analysis course at Universidad Distrital Francisco José de Caldas. The link of the project is https://www.kaggle.com/competitions/equity-post-HCT-survival-predictions. The goal of this project was...... PENDING
-
+Welcome to the Equity in post-HCT survival predictions project! This project was developed as part of System Analysis course at Universidad Distrital Francisco José de Caldas. The link of the project is https://www.kaggle.com/competitions/equity-post-HCT-survival-predictions. The goal of this project is to build a machine learning model that could accurately rank patients by their risk of a survival event (like relapse or death) after a hemopoietic cell transplant (HCT) 
 ### Objectives:
-- .
+- Understand the structure of the competition’s system. 
+
+- Learn more about the medical context to apply new ideas accurately as possible. 
+
+- Identify the system’s elements, relationships, and boundaries. 
+
+- Check the sensitivity and complexity of the problem. 
+
+- Analyze the evaluation metric. 
+
+- Propose recommendations to improve the accuracy and fairness of the models.
 
 ### Technologies:
 
@@ -39,10 +48,10 @@ Welcome to the Equity in post-HCT survival predictions project! This project was
 
 ## Workshops Summary
 
-1. **Workshop 1:** PENDING SUMARY
+1. **Workshop 1:** Analysis of a kaggle competition.
     - Folder: `first_workshop`
-    - Description:
-    - Files: 
+    - Description: This folder contains all materials for Workshop No. 1. It includes the competition overview, a systems analysis report (with elements, relationships, and complexity discussion), visual diagrams, latex source code, and the final PDF report as  required by the assignment.
+    - Files: PENDING
 
 2. **Workshop 2:** PENDING SUMARY
     - Folder: `second_workshop`
