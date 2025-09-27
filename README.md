@@ -50,7 +50,7 @@ Welcome to the Equity in post-HCT survival predictions project! This project was
 
 1. **Workshop 1:** Analysis of a kaggle competition.
     - Folder: `first_workshop`
-    - Description: This folder contains all materials for Workshop No. 1. It includes the competition overview, a systems analysis report (with elements, relationships, and complexity discussion), visual diagrams, latex source code, and the final PDF report as  required by the assignment.
+    - Description: This folder contains all materials for Workshop No. 1. It includes a systems analysis report (with elements, relationships, and complexity discussion) that describes the competition overview, , visual diagrams, latex source code, and the final PDF report as  required by the assignment.
     - Files: PENDING
 
 2. **Workshop 2:** PENDING SUMARY
