@@ -17,7 +17,7 @@
 ---
 
 ## Table of Contents
-- [Projecto Overview](##project-overview)
+- [Project Overview](##project-overview)
 - [Objetives](##objetives)
 - [Technologies](##Technologies)
 - [Workshops](##workshops-summary)
