@@ -50,13 +50,13 @@ Welcome to the Equity in post-HCT survival predictions project! This project was
 
 1. **Workshop 1:** Analysis of a kaggle competition.
     - Folder: `first_workshop`
-    - Description: This folder contains all materials for Workshop No. 1. It includes a systems analysis report (with elements, relationships, and complexity discussion) that describes the competition overview, , visual diagrams, latex source code, and the final PDF report as  required by the assignment.
+    - Description: This folder contains all materials for Workshop No. 1. It includes a systems analysis report (with elements, relationships, and complexity discussion) that describes the competition overview, visual diagrams, latex source code, and the final PDF report as  required by the assignment.
     - Files: PENDING
 
-2. **Workshop 2:** PENDING SUMARY
+2. **Workshop 2:** Kaggle Systems Design
     - Folder: `second_workshop`
-    - Description:
-    - Files: 
+    - Description: This folder contains the collaborative work of four team members for Workshop No. 2. It includes a comprehensive system design document analyzing a Kaggle competition, exploring its elements, relationships, sensitivity considerations, and chaos theory implications. The design focuses on a modular pipeline architecture that addresses equity considerations throughout the prediction pipeline.
+    - Files: System Design Document (PDF), LaTeX source code, System Architecture Diagrams, References, Step-by-Step Development Guide, README.md
 
 3. **Workshop 3:** PENDING SUMMARY
     - Folder: `third_workshop`
