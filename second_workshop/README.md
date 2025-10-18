@@ -1,4 +1,4 @@
-# Workshop 1: Kaggle Systems Design
+# Workshop 2: Kaggle Systems Design
 
 ## Overview
 
