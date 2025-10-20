@@ -41,6 +41,13 @@ Our analysis from Workshop 1 identified several critical constraints that must b
 
 These constraints directly inform our architectural decisions and implementation strategies, creating boundaries within which we must develop our solution.
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\textwidth]{figures/DataEntityRelationship.png}
+    \caption{Entity-relationship diagram of the CIBMTR dataset structure showing the relationships between key data entities: patients, diseases, transplant procedures, HLA matching, and outcomes. This visualization maps how different data components are interconnected, highlighting the complexity of the dataset and providing context for the data constraints faced in prediction modeling.}
+    \label{fig:data_er_diagram}
+\end{figure}
+
 \section{System Requirements}
 
 \subsection{Measurable Design Requirements}
@@ -67,10 +74,19 @@ These constraints directly inform our architectural decisions and implementation
 
 \begin{figure}[H]
     \centering
+    \includegraphics[width=0.95\textwidth]{figures/UseCaseDiagram.png}
+    \caption{Use case diagram showing how different stakeholders interact with the prediction system. This visualization connects the technical capabilities of the system with the specific needs of transplant physicians, clinical researchers, healthcare administrators, model developers, and patients, illustrating how each user group utilizes different aspects of the system's functionality.}
+    \label{fig:use_case_diagram}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
     \includegraphics[width=1\textwidth]{figures/DatasetHeatmap.jpg}
     \caption{Heatmap visualization showing correlations between numerical variables in the dataset. This visualization facilitates understanding of the system's numerical input data to identify potential redundancies. By revealing which variables are highly correlated with each other, the heatmap provides insight into variable relationships that may influence system performance. This understanding allows us to prioritize relationships that contribute most effectively to the established system requirements, particularly with respect to equity considerations across demographic groups.}
     \label{fig:dataset_heatmap}
 \end{figure}
+
+\newpage
 
 \subsection{Evaluation Metric and Fairness Assessment}
 
@@ -85,6 +101,85 @@ The stratified C-index serves as the primary evaluation metric for this system, 
 
 This evaluation approach addresses a critical challenge in healthcare prediction: models may perform well on average while performing poorly for specific demographic groups. By requiring consistent performance across all patient populations, the stratified C-index incentivizes fair prediction systems that do not disadvantage underrepresented groups. Our architecture explicitly addresses this requirement through dedicated modules for equity analysis and fairness calibration.
 
+\subsection{User Stories and Requirements Prioritization}
+
+\subsubsection{User Stories}
+
+We identified the following user stories to guide our system design:
+
+\begin{itemize}
+    \item \textbf{As a transplant physician}, I need accurate survival predictions stratified by demographic groups so that I can provide equitable prognostic information to all my patients regardless of their background.
+    
+    \item \textbf{As a clinical researcher}, I need to understand which factors most influence survival predictions so that I can identify potential interventions that might improve outcomes.
+    
+    \item \textbf{As a healthcare administrator}, I need performance metrics that demonstrate equitable model performance across populations so that I can ensure our institution delivers fair care.
+    
+    \item \textbf{As a model developer}, I need robust evaluation frameworks so that I can verify my algorithms maintain accuracy across different demographic subgroups.
+    
+    \item \textbf{As a patient}, I need trustworthy survival estimates with appropriate uncertainty bounds so that I can make informed decisions about my treatment options.
+\end{itemize}
+
+\subsubsection{Requirements Prioritization (MoSCoW)}
+
+\begin{itemize}
+    \item \textbf{Must Have:}
+    \begin{itemize}
+        \item Equity across demographic groups (measured by stratified C-index)
+        \item Accurate survival predictions (minimum C-index of 0.70)
+        \item Clinical validity of identified risk factors
+        \item Appropriate uncertainty quantification
+    \end{itemize}
+    
+    \item \textbf{Should Have:}
+    \begin{itemize}
+        \item Interpretability of model predictions
+        \item Efficient computational performance
+        \item Handling of complex missing data patterns
+        \item Identification of potential biases in input data
+    \end{itemize}
+    
+    \item \textbf{Could Have:}
+    \begin{itemize}
+        \item Integration capabilities with clinical workflows
+        \item Advanced visualization of prediction uncertainty
+        \item Personalization of risk thresholds
+        \item Continuous learning capabilities
+    \end{itemize}
+    
+    \item \textbf{Won't Have (This Version):}
+    \begin{itemize}
+        \item Integration with electronic health records
+        \item Real-time prediction updates
+        \item Patient-facing interfaces
+        \item External data augmentation
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Requirements Traceability}
+
+To ensure all requirements are properly addressed by our architecture, we map key requirements to specific system components:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|p{4cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|p{1.5cm}|}
+\hline
+\textbf{Requirement} & \textbf{\footnotesize Preproc.} & \textbf{\footnotesize Equity Analysis} & \textbf{\footnotesize Feature Selection} & \textbf{\footnotesize Modeling} & \textbf{\footnotesize Fairness} & \textbf{\footnotesize Outputs} \\
+\hline
+Equity across groups & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+\hline
+Clinical interpretability & \checkmark & & \checkmark & & & \checkmark \\
+\hline
+Handling missing data & \checkmark & \checkmark & & & & \\
+\hline
+Uncertainty estimation & & & & \checkmark & \checkmark & \checkmark \\
+\hline
+Fairness across demographics & \checkmark & \checkmark & \checkmark & & \checkmark & \checkmark \\
+\hline
+\end{tabular}
+\caption{Requirements traceability matrix showing how each system component addresses specific user and technical requirements. This visualization ensures all requirements are properly addressed within the system architecture.}
+\label{tab:req_trace_matrix}
+\end{table}
+
 \section{High-Level Architecture}
 
 \subsection{Architectural Overview}
@@ -95,9 +190,16 @@ The architecture of the system is organized into modules representing the main s
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=1\textwidth]{figures/SystemDesignArchitecture.jpg}
-    \caption{High-level architecture showing the seven core modules and data flow for the post-HCT survival prediction system.}
-    \label{fig:system_architecture_design}
+    \includegraphics[width=0.5\textwidth]{figures/SystemArchitectureFlowchart.png}
+    \caption{System architecture flowchart showing the seven core modules, data flow between components, and feedback loops. The arrows indicate the primary information flow, while dotted lines represent feedback mechanisms that enable continuous optimization. This design explicitly incorporates equity considerations throughout the prediction pipeline, with color-coding to distinguish different functional areas: blue for preprocessing, red for equity-focused components, green for modeling, and yellow for system outputs.}
+    \label{fig:system_architecture_flowchart}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{figures/SystemContextDiagram.png}
+    \caption{System context diagram showing the prediction system's boundaries and its interactions with external entities. The central area represents components within our system boundary, while external systems (data sources, clinical decision support) and users (physicians, researchers, administrators) are positioned outside. This visualization clarifies what is within the scope of our system versus what it interfaces with externally.}
+    \label{fig:system_context_diagram}
 \end{figure}
 
 \subsection{Modules and Responsibilities}
@@ -243,6 +345,27 @@ Quality and QA Reports & Delivers performance metrics, calibration plots, and da
 \label{tab:outputs_module}
 \end{table}
 
+\subsection{System Information Flow}
+
+To complement the modular architecture description, we visualize the temporal progression of information through the system with a sequence diagram:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{figures/SystemSequenceDiagram.png}
+    \caption{Detailed sequence diagram illustrating the flow of information through the system pipeline. The diagram shows how data progresses from the CIBMTR dataset through each processing stage, with parallel operations where appropriate and feedback loops enabling continuous improvement. Each numbered step represents a specific operation in the prediction workflow, highlighting the dynamic interactions between modules.}
+    \label{fig:system_sequence_diagram}
+\end{figure}
+
+This sequence view demonstrates how information flows through our modules over time, including:
+\begin{itemize}
+    \item Parallel processing paths for efficiency
+    \item Key decision points in the pipeline
+    \item Feedback mechanisms that enable system learning and adaptation
+    \item Sequential dependencies between operations
+\end{itemize}
+
+The diagram reinforces how equity considerations permeate the entire workflow, from initial data preprocessing through final output generation, ensuring fairness is maintained throughout the prediction process.
+
 \subsection{Systems Engineering Principles}
 
 The systems engineering principles applied to shape these structural decisions are:
@@ -288,6 +411,13 @@ Our analysis identified several parameters where small variations generate dispr
     \item \textbf{HLA matching:} Subtle genetic compatibility differences substantially affect transplant rejection rates \cite{frontiers_immunology}
     \item \textbf{Comorbidities:} Presence or absence of specific conditions can dramatically alter survival projections \cite{mdpi_cancers}
 \end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figures/RiskImpactMatrix.png}
+    \caption{Risk-impact matrix for key prediction features, positioning variables according to their predictive power (impact) and potential for introducing bias (risk). High-impact, high-risk features like patient age and HLA matching require particular attention in our fairness calibration process. This visualization guides our feature selection strategy by highlighting which variables need careful handling to balance predictive power against equity considerations.}
+    \label{fig:risk_impact_matrix}
+\end{figure}
 
 \begin{figure}[H]
     \centering
@@ -392,6 +522,13 @@ We have identified a range of widely-used and accessible tools designed to handl
 \subsection{Implementation Approach}
 
 \subsubsection{Development Methodology}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.35\textwidth]{figures/DevelopmentWorkflow.png}
+    \caption{Development workflow diagram showing the five implementation phases: Data Preparation, Analysis \& Selection, Model Development, Fairness \& Uncertainty, and Outputs \& Evaluation. Each phase contains specific tasks that must be completed before progressing to subsequent phases, though feedback loops exist between phases for iterative refinement. Color-coding distinguishes different phases of implementation, highlighting both the sequential nature of development and cross-phase dependencies.}
+    \label{fig:development_workflow}
+\end{figure}
 
 Our implementation will follow a structured workflow that addresses both the technical challenges of accurate prediction and the ethical requirements for equity:
 
