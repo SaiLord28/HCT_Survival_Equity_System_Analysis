@@ -58,7 +58,7 @@ Welcome to the Equity in post-HCT survival predictions project! This project was
     - Description: This folder contains the collaborative work of four team members for Workshop No. 2. It includes a comprehensive system design document analyzing a Kaggle competition, exploring its elements, relationships, sensitivity considerations, and chaos theory implications. The design focuses on a modular pipeline architecture that addresses equity considerations throughout the prediction pipeline.
     - Files: System Design Document (PDF), LaTeX source code, System Architecture Diagrams, References, Step-by-Step Development Guide, README.md
 
-3. **Workshop 3:** PENDING SUMMARY
+3. **Workshop 3:**  Robust System Design and Project Management
     - Folder: `3_workshop`
     - Description: Refined architecture with robust principles, comprehensive risk analysis (6 risks with mitigations), and 4-week project management plan (Nov 8 - Dec 5, 2025). Aligned with ISO 9000, CMMI Level 3, and Six Sigma standards.
     - Key Deliverables:
