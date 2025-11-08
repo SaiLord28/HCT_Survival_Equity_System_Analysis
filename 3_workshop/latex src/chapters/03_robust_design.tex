@@ -1,0 +1,426 @@
+\chapter{Robust System Design and Project Management}
+
+\section{Incremental Improvements and Lessons Learned}
+
+Workshop 1 identified core challenges: high sensitivity to input variables, chaotic and unpredictable behavior, and critical equity requirements \cite{kaggle_competition,frontiers_ai_hct}. Workshop 2 designed a 7-module architectural blueprint. Workshop 3 focuses on making our quality control practical and ensuring fair results.
+
+\subsection{Evolution Across Workshops}
+
+\textbf{Workshop 1 → Workshop 2:}
+\begin{itemize}
+    \item \textit{Challenge:} Post-HCT outcomes exhibit chaos where small input variations produce large output changes \cite{stmcls_clonality}.
+    \item \textit{Response:} Designed Uncertainty Quantification Module (M6) with confidence intervals.
+\end{itemize}
+
+\textbf{Workshop 2 → Workshop 3:}
+\begin{itemize}
+    \item \textit{Gap:} Had architecture but lacked operational controls.
+    \item \textit{Response:} Added monitoring framework (Table~\ref{tab:monitoring}) with thresholds and protocols \cite{iso9000,cmmi,sixsigma}.
+\end{itemize}
+
+\textbf{Pattern:} Workshop 1 (Problem Identification) → Workshop 2 (Solution Architecture) → Workshop 3 (Operational Quality Control).
+
+\section{Review and Refine System Architecture}
+
+The 7-module pipeline from Workshop 2 remains unchanged \cite{mlpipeline_arxiv}. This design is robust by nature. Here we explain how it handles reliability, scalability, and maintainability.
+
+\subsection{Updated Architecture Diagram (Robust Principles)}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{figures/system_architecture.jpg}
+    \caption{System architecture: M1 (Preprocessing), M2 (Equity Analysis), M3 (Feature Selection), M4 (Modeling), M5 (Fairness Calibration), M6 (Uncertainty Quantification), M7 (Outputs).}
+    \label{fig:system_architecture}
+\end{figure}
+
+This architecture supports robust design through four key principles:
+
+\begin{itemize}
+    \item \textbf{Modularity:} M1-M7 are discrete components with versioned interfaces. Updating M5 doesn't touch M4 \cite{datacamp_mlops}.
+    \item \textbf{Scalability:} M4 scales independently via parallel CV folds without extra resources for M3 \cite{scikit_learn_cv}.
+    \item \textbf{Maintainability:} Configuration separated from code; MLflow tracks experiments.
+    \item \textbf{Fault-Tolerance:} M1 triggers fallback imputation when missingness $>30\%$; errors don't cascade.
+\end{itemize}
+
+\subsection{Component Support for System Quality and Reliability}
+
+Each component addresses Workshop 1 findings (chaos, sensitivity, equity) \cite{kaggle_competition,frontiers_ai_hct}:
+
+\textbf{M1: Data Preprocessing}
+\begin{itemize}
+    \item \textit{Quality:} Equity-aware imputation prevents differential missingness \cite{geeksforgeeks_preprocessing,pushkarna_preprocessing}.
+    \item \textit{Reliability:} Fallback strategies ensure continuity.
+\end{itemize}
+
+\textbf{M2: Equity Analysis}
+\begin{itemize}
+    \item \textit{Quality:} QA component performing stratified analysis and bias detection \cite{aif360_github,fairlearn_org}.
+\end{itemize}
+
+\textbf{M3: Feature Selection}
+\begin{itemize}
+    \item \textit{Quality:} Validates feature availability across demographics \cite{jama_ai_medicine}.
+    \item \textit{Reliability:} Combines domain/statistical/ML strategies to reduce bias.
+\end{itemize}
+
+\textbf{M4: Predictive Modeling Core}
+\begin{itemize}
+    \item \textit{Reliability:} Ensembles (Cox \cite{geeksforgeeks_cox}, RSF \cite{scikit_survival_rsf}, GBM \cite{neptune_boosting}) robust against chaotic behavior.
+    \item \textit{Quality:} Demographic-stratified CV ensures consistent evaluation \cite{scikit_learn_cv}.
+\end{itemize}
+
+\textbf{M5: Fairness Calibration}
+\begin{itemize}
+    \item \textit{Quality:} Primary QC mechanism enforcing stratified C-index standard \cite{linkedin_fairness,shelf_fairness}.
+\end{itemize}
+
+\textbf{M6: Uncertainty Quantification}
+\begin{itemize}
+    \item \textit{Reliability \& Usability:} Manages ``chaos'' and ``sensitivity'' via confidence intervals \cite{scikit_survival_intro}.
+\end{itemize}
+
+\textbf{M7: System Outputs}
+\begin{itemize}
+    \item \textit{Usability:} SHAP interpretability builds clinical trust \cite{shap_docs,datacamp_shap,astct_simplification}.
+\end{itemize}
+
+\subsection{Alignment with Quality Standards}
+
+\textbf{ISO 9000:} Customer focus via M7 interpretability; continuous improvement via M2-M5 feedback loop \cite{iso9000}.
+
+\textbf{CMMI Level 3:} 7-module pipeline is a defined process with documented interfaces; MLflow maintains process assets \cite{cmmi}.
+
+\textbf{Six Sigma:} ``Defect'' = inequity (disparity $>0.10$); M5 acts as Control mechanism \cite{sixsigma,kaggle_competition}.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|p{2.5cm}|p{5cm}|p{6.5cm}|}
+\hline
+\textbf{Standard} & \textbf{Principle} & \textbf{Evidence} \\
+\hline
+ISO 9000 & Customer focus; improvement & M7 SHAP for trust; M2-M5 loop \\
+CMMI (L3) & Defined processes & Module interfaces; stratified CV; MLflow \\
+Six Sigma & Defect reduction & Disparity $>0.10$ = defect; M5 control \\
+\hline
+\end{tabular}
+\caption{Standards mapped to architectural components.}
+\label{tab:standards}
+\end{table}
+
+\section{Quality and Risk Analysis}
+
+\subsection{Potential Risks and Failure Points}
+
+We identified six main risks that could affect system performance, fairness, or our ability to deliver on time:
+
+\subsubsection{Risk 1: Emergent Behaviors and Prediction Instability}
+Non-linearities in post-HCT outcomes (immune responses, complications) cause unpredictable model outputs \cite{frontiers_ai_hct,stmcls_clonality}. Small input changes (e.g., 1-year age difference, minor HLA mismatch) may produce disproportionately large prediction variations. Complex variable interactions create ``tipping points'' where model behavior becomes unstable. The chaotic nature means even deterministic models produce seemingly random results for edge cases.
+
+\subsubsection{Risk 2: Feature Selection Bias (M3)}
+Biased feature selection from indices that don't maintain equity \cite{jama_ai_medicine}. Statistical methods may prioritize features more complete for majority demographics. ML-based importance metrics may encode spurious correlations with sensitive attributes (race/ethnicity). Clinical domain knowledge may reflect historical biases. Features may be systematically missing, measured differently, or less accurate across demographic groups.
+
+\subsubsection{Risk 3: Input Data Quality (``Garbage In, Garbage Out'')}
+System performance depends critically on data quality \cite{cibmtr_datasets}. Non-random missingness patterns correlate with demographics (e.g., certain tests less frequently performed for specific populations). Measurement inconsistencies exist across transplant centers and time periods. Data entry errors or outliers can corrupt model training. Temporal quality variations mean earlier records may be less complete than recent ones.
+
+\subsubsection{Risk 4: Data Quality Worse Than Expected}
+Dataset may have more severe quality issues than initial exploration suggests. Missing values may exceed $30\%$ threshold for critical features. Data documentation may be incomplete or inconsistent. Preprocessing complexity may require more time than Week 2 allocation.
+
+\subsubsection{Risk 5: Model Accuracy Lower Than Goal}
+Initial models may not achieve target C-index $>0.70$. Fairness constraints may reduce overall accuracy. Ensemble methods may not provide expected performance gains. Hyperparameter tuning may be insufficient within Week 3 timeframe.
+
+\subsubsection{Risk 6: Project Schedule and Team Availability}
+Team member may become unavailable due to illness or other commitments. Tasks may take longer than estimated (especially ML experimentation). Dependencies between tasks may cause cascading delays. Milestone deadlines (Nov 14, 21, 28, Dec 5) may be at risk if issues compound.
+
+\subsection{Mitigation Strategies}
+
+\subsubsection{For Risk 1: Emergent Behaviors}
+\begin{itemize}
+    \item \textbf{No Full Automation:} System serves as decision support only; physician must validate all predictions \cite{astct_simplification}.
+    \item \textbf{Continuous Monitoring:} Compare predictions against actual outcomes as follow-up data becomes available; retrain or recalibrate upon drift detection \cite{datacamp_mlops}.
+    \item \textbf{Sensitivity Analysis:} Vary multiple input parameters simultaneously to identify unstable regions; document operating envelopes; flag out-of-envelope predictions.
+    \item \textbf{Ensemble Diversity:} Use multiple model types (Cox, RSF, Gradient Boosting) in M4 so erratic individual behavior averages out \cite{neptune_boosting}.
+\end{itemize}
+
+\subsubsection{For Risk 2: Feature Selection Bias}
+\begin{itemize}
+    \item \textbf{Fairness as Explicit Objective:} Make equity metrics (demographic parity, equalized odds) first-class objectives alongside accuracy \cite{fairlearn_org,shelf_fairness}.
+    \item \textbf{Fairness-Aware Preprocessing:} Apply reweighing, disparate impact removal, or learning fair representations to eliminate sensitive attribute dependencies \cite{aif360_github}.
+    \item \textbf{Multiple Selection Strategies:} Cross-check domain knowledge, statistical tests, and ML importance; require consensus from at least two methods before including features.
+    \item \textbf{Availability Verification:} Perform demographic-stratified completeness analysis; reject features with $>20\%$ availability disparity across groups.
+\end{itemize}
+
+\subsubsection{For Risk 3: Input Data Quality}
+\begin{itemize}
+    \item \textbf{Robust Imputation:} Use MICE/KNN with demographic stratification to prevent amplifying group differences \cite{geeksforgeeks_preprocessing}. Include missingness indicators as features to capture pattern information.
+    \item \textbf{Train with Noise:} Inject realistic errors (out-of-range values, empty fields) during training so model handles imperfect real-world inputs gracefully.
+    \item \textbf{Metadata Logging:} Track data origin, modifications, and cleaning processes for auditability \cite{pmc_pipeline}. Enable tracing predictions to source transformations.
+    \item \textbf{Exhaustive Documentation:} Document collection methodology, population coverage, known limitations, preprocessing steps \cite{cibmtr_datasets}.
+\end{itemize}
+
+\subsubsection{For Risk 4: Data Quality Worse Than Expected}
+\begin{itemize}
+    \item \textbf{Allocate Extra Time in Week 2:} If quality issues discovered, prioritize data cleaning and extend Week 2 by 2-3 days if needed.
+    \item \textbf{Request Professor Guidance:} Consult during Friday review session for advice on handling severe quality issues.
+    \item \textbf{Adjust Timeline:} If data preparation extends into Week 3, compress modeling tasks by using simpler baseline models first.
+    \item \textbf{Team Reallocation:} Juan Diego Moreno (Quality Specialist) assists Juan Otalora (Data Analyst) with cleaning if workload exceeds 20 hours/week.
+\end{itemize}
+
+\subsubsection{For Risk 5: Model Accuracy Lower Than Goal}
+\begin{itemize}
+    \item \textbf{Iterative Approach in Week 3:} Start with simple baselines (Cox), progressively add complexity (RSF, GBM); identify which techniques provide gains.
+    \item \textbf{Professor Feedback:} Present intermediate results during Week 3 Friday review; get suggestions for alternative approaches.
+    \item \textbf{Focus on Key Improvements:} If time-constrained, prioritize most impactful optimizations (feature engineering, calibration) over exhaustive hyperparameter search.
+    \item \textbf{Realistic Goal Adjustment:} If C-index $>0.70$ proves unattainable, document why and aim for best achievable performance with fairness maintained.
+\end{itemize}
+
+\subsubsection{For Risk 6: Schedule and Team Availability}
+\begin{itemize}
+    \item \textbf{Work Redistribution:} If Sergio Mendivelso (Programmer, 20-25h/week) unavailable, Juan Otalora assists with code; Sergio Moreno takes on integration tasks.
+    \item \textbf{Task Prioritization:} Focus on critical path items first (data cleaning → feature selection → baseline models → predictions). Defer nice-to-have features (advanced visualizations, extensive documentation polish).
+    \item \textbf{Buffer in Week 4:} Week 4 includes documentation and final checks; if behind, compress documentation and prioritize working predictions.csv and technical report.
+    \item \textbf{Early Escalation:} Sergio Moreno (Project Coordinator) identifies blockers in Monday meetings and escalates to professor immediately rather than waiting until Friday.
+\end{itemize}
+
+\subsection{Monitoring and Response}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|p{2.5cm}|p{3.5cm}|p{2cm}|p{5cm}|}
+\hline
+\textbf{Risk Category} & \textbf{Monitoring Metric} & \textbf{Alert Threshold} & \textbf{Response Protocol} \\
+\hline
+Emergent instability & Prediction std. dev. for similar patient profiles & $>0.15$ & Run sensitivity analysis; simplify or regularize model; clinical expert review \\
+\hline
+Selection bias (M3) & Max C-index gap across demographic groups & $>0.10$ & Apply reweighing \cite{aif360_github}; revise feature set; recalibrate M5 thresholds \\
+\hline
+Data quality & Percentage missingness in critical features & $>30\%$ & Escalate to advanced imputation; flag high-uncertainty predictions; consider excluding feature \\
+\hline
+Model drift & C-index drop vs. validation baseline & $>5\%$ & Retrain on recent data; refresh M5 calibration; investigate population changes \\
+\hline
+Schedule delay & Tasks behind planned completion & $>2$ days & Team meeting to redistribute work; prioritize critical path; escalate to professor \\
+\hline
+Milestone risk & Success criteria not met & Any red flag & Block progression; focus team on resolving issues; adjust scope if necessary \\
+\hline
+\end{tabular}
+\caption{Risk monitoring framework with metrics, thresholds, and response protocols.}
+\label{tab:monitoring}
+\end{table}
+
+\textbf{During Development (Weeks 1-4):}
+
+We'll maintain a comprehensive log of project implementation using Git version control and MLflow experiment tracking. In the event of an error, this logging helps us quickly identify the source and find a solution.
+
+We'll keep high-level team communication to effectively share ideas, corrections, and errors, keeping everyone informed through:
+\begin{itemize}
+    \item \textbf{Automated CI/CD:} Builds fail when Table~\ref{tab:monitoring} thresholds violated \cite{datacamp_mlops}; prevents merging problematic code.
+    \item \textbf{Weekly Monday Meetings (15 min):} Review completed work, current plans, blockers; Project Coordinator escalates critical alerts.
+    \item \textbf{Milestone Quality Gates:} All success criteria must be met before progressing to next week; QA Specialist has authority to block if unmet.
+    \item \textbf{Daily Slack/WhatsApp Updates:} Quick questions and progress sharing maintain continuous visibility.
+    \item \textbf{Friday Professor Reviews (optional):} Opportunity to get guidance and validate approach before weekend work.
+\end{itemize}
+
+\textbf{During Operation (if deployed post-competition):}
+
+\begin{itemize}
+    \item MLflow logs every prediction with timestamp, input features, output probabilities, uncertainty scores, model version.
+    \item Monthly automated equity audits calculate stratified C-index on all recent predictions \cite{shelf_fairness}.
+    \item Outcome-based recalibration: as actual patient outcomes become available, compare against predictions; if drift detected (C-index drop $>5\%$), trigger retraining and M5 calibration refresh.
+    \item Critical alerts (severe fairness violations, system crashes) trigger immediate investigation; system can be temporarily disabled if patient harm risk identified.
+\end{itemize}
+
+\section{Project Management Plan}
+
+\subsection{Team Roles and Responsibilities}
+
+Our 4-member team has clearly defined roles aligned with the 7-module architecture:
+
+\textbf{Sergio Mendivelso - Programmer}
+\begin{itemize}
+    \item \textit{Main Tasks:} Write and test code for data processing (M1); build prediction pipeline (M4); integrate system components (M1-M7); manage GitHub repository; debug and fix technical issues.
+    \item \textit{Weekly Hours:} 20-25 hours
+    \item \textit{Key Deliverables:} Working code for all modules, tested functions, final predictions (predictions.csv)
+\end{itemize}
+
+\textbf{Sergio Moreno - Project Coordinator}
+\begin{itemize}
+    \item \textit{Main Tasks:} Organize team meetings and communication; track project progress against timeline; report status to professor; manage deadlines and milestones; identify and solve blockers.
+    \item \textit{Weekly Hours:} 5-8 hours
+    \item \textit{Key Deliverables:} Status reports, meeting notes, timeline updates, final submission coordination
+\end{itemize}
+
+\textbf{Juan Otalora - Data Analyst}
+\begin{itemize}
+    \item \textit{Main Tasks:} Explore and understand dataset; clean and prepare data (M1); analyze fairness and equity issues (M2); select important features (M3); validate results.
+    \item \textit{Weekly Hours:} 15-20 hours
+    \item \textit{Key Deliverables:} Clean dataset, fairness analysis reports, feature list, validation results
+\end{itemize}
+
+\textbf{Juan Diego Moreno - Quality Specialist}
+\begin{itemize}
+    \item \textit{Main Tasks:} Assist with testing and validation; help with data analysis; support code documentation; quality assurance checks; general project support.
+    \item \textit{Weekly Hours:} 10-15 hours
+    \item \textit{Key Deliverables:} Test reports, documentation, quality checks, final QA report
+\end{itemize}
+
+\subsection{Project Management Methodology}
+
+For this 4-week implementation sprint (November 8 - December 5, 2025), we use a milestone-driven approach with weekly synchronization meetings.
+
+\textbf{Communication Protocol:}
+\begin{itemize}
+    \item \textit{Weekly Meeting:} Every Monday at 9:00 AM (15 minutes) covering: (1) completed work, (2) current week plans, (3) blockers
+    \item \textit{Daily Updates:} Slack/WhatsApp for quick questions; GitHub for code updates; shared documents for progress
+    \item \textit{Optional Review:} Friday check-in with professor for guidance
+\end{itemize}
+
+\textbf{Development Tools:}
+\begin{itemize}
+    \item \textit{GitHub:} Code storage, version control, collaboration
+    \item \textit{Python:} Primary programming language
+    \item \textit{Data Format:} CSV files for datasets and predictions
+    \item \textit{Communication:} Slack/WhatsApp for coordination; Google Docs for shared notes
+\end{itemize}
+
+\subsection{Project Timeline and Milestones}
+
+The project spans 4 weeks with clearly defined milestones:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{figures/project_timeline.png}
+    \caption{4-week sprint timeline showing milestones, deliverables, and team responsibilities from November 8 to December 5, 2025.}
+    \label{fig:timeline}
+\end{figure}
+
+\textbf{Week 1: Setup and Planning (Nov 8-14) - Milestone M1: Kickoff Complete}
+\begin{itemize}
+    \item \textit{Goals:} Plan project scope; prepare dataset; setup development environment; establish workflows
+    \item \textit{Deliverables:}
+    \begin{itemize}
+        \item Project Charter (1 page) - Sergio Moreno
+        \item Data Overview Report (2 pages) - Juan Otalora
+        \item GitHub setup with README - Sergio Mendivelso
+        \item File structure outline - Juan Diego Moreno
+    \end{itemize}
+    \item \textit{Success Criteria:} Team understands goals; dataset accessible; environment works for all; repository organized
+\end{itemize}
+
+\textbf{Week 2: Data Analysis and Design (Nov 15-21) - Milestone M2: Data Ready}
+\begin{itemize}
+    \item \textit{Goals:} Deep dataset understanding; identify data quality issues; plan architecture; select features
+    \item \textit{Deliverables:}
+    \begin{itemize}
+        \item Cleaned Dataset (CSV) - Juan Otalora
+        \item Fairness Analysis Report (2-3 pages) - Juan Otalora
+        \item Data processing functions with tests - Sergio Mendivelso
+        \item Feature selection report - Juan Otalora
+        \item Professor approval - Sergio Moreno
+    \end{itemize}
+    \item \textit{Success Criteria:} Data clean and ready; missing values handled; fairness issues identified; features selected and validated
+\end{itemize}
+
+\textbf{Week 3: System Building (Nov 22-28) - Milestone M3: Models Working}
+\begin{itemize}
+    \item \textit{Goals:} Build prediction models; test accuracy; ensure fairness across groups; validate results
+    \item \textit{Deliverables:}
+    \begin{itemize}
+        \item Working model code - Sergio Mendivelso
+        \item Accuracy and fairness results (CSV) - Juan Otalora
+        \item Fairness validation report - Juan Otalora
+        \item Optimized and debugged code - Sergio Mendivelso
+        \item Test report - Juan Diego Moreno
+    \end{itemize}
+    \item \textit{Success Criteria:} Models trained and working; accuracy acceptable; fairness checked across groups; code clean and documented; all tests pass
+\end{itemize}
+
+\textbf{Week 4: Documentation and Delivery (Nov 29 - Dec 5) - Milestone M4: Project Delivered}
+\begin{itemize}
+    \item \textit{Goals:} Prepare final predictions; write documentation; create presentation; submit deliverables
+    \item \textit{Deliverables:}
+    \begin{itemize}
+        \item Final predictions.csv - Sergio Mendivelso
+        \item Code documentation - Sergio Mendivelso
+        \item Technical Report (8-10 pages) - Juan Otalora
+        \item Presentation slides (10-15) - Sergio Moreno
+        \item Quality assurance report - Juan Diego Moreno
+        \item Final submission package - Sergio Moreno
+    \end{itemize}
+    \item \textit{Success Criteria:} Predictions formatted correctly; all code documented; technical report complete; presentation ready; files organized on GitHub; submitted on time (Dec 5, 2025)
+\end{itemize}
+
+\subsection{GitHub Repository Structure}
+
+Our repository follows this organization:
+
+\begin{verbatim}
+HCT-Survival-Prediction/
+|-- data/
+|   |-- raw/               # Original dataset
+|   |-- processed/         # Cleaned data
+|   +-- predictions/       # Final predictions.csv
+|-- src/
+|   |-- preprocessing.py   # M1: Data Preprocessing
+|   |-- equity.py          # M2: Equity Analysis
+|   |-- features.py        # M3: Feature Selection
+|   |-- models.py          # M4: Predictive Modeling
+|   |-- calibration.py     # M5: Fairness Calibration
+|   |-- uncertainty.py     # M6: Uncertainty Quantification
+|   +-- outputs.py         # M7: System Outputs
+|-- tests/                 # Unit and integration tests
+|-- docs/
+|   |-- reports/           # Analysis and technical reports
+|   +-- presentation/      # Final presentation
+|-- requirements.txt       # Python dependencies
++-- README.md             # Setup and usage instructions
+\end{verbatim}
+
+\subsection{Success Criteria}
+
+\textbf{Technical Goals:}
+\begin{itemize}
+    \item Prediction model works accurately (stratified C-index $>0.70$)
+    \item Fairness similar across all demographic groups (gap $<0.10$)
+    \item Code clean and well-documented with passing tests
+\end{itemize}
+
+\textbf{Project Goals:}
+\begin{itemize}
+    \item All 4 milestones (M1-M4) completed on time
+    \item Team collaboration effective with clear communication
+    \item Deliverables professional and clear
+    \item Final submission by December 5, 2025
+\end{itemize}
+
+\textbf{Learning Goals:}
+\begin{itemize}
+    \item Team learns about fairness in machine learning
+    \item Team practices data analysis and prediction techniques
+    \item Team develops teamwork and project management skills
+    \item Team completes project successfully with quality outcomes
+\end{itemize}
+
+\section{Conclusion}
+
+This workshop transitions from problem identification (W1) and solution design (W2) to operational frameworks for quality (W3). The 4-week implementation plan (November 8 - December 5, 2025) makes these frameworks practical with concrete milestones and deliverables.
+
+\textbf{Challenges Faced in This Phase:} The main challenge was making our theoretical design work with real-world constraints. Translating abstract concepts like ``robustness'' and ``fairness'' into concrete, measurable criteria took careful thought about what thresholds would be both achievable and meaningful. Setting the C-index gap threshold at $>0.10$ balances our equity goals with realistic model capabilities given complex medical data.
+
+Another challenge was coordinating our 4-member team with varying time commitments (5-25 hours/week) across a tight 4-week schedule. We solved this by defining clear role boundaries (programmer, coordinator, analyst, quality specialist) and establishing weekly sync points (Monday meetings, Friday professor reviews) to maximize parallel work while keeping everyone coordinated.
+
+\textbf{Key Decisions:}
+
+\textit{Operationalizing Quality:} Rather than vague ``ensuring fairness,'' we defined concrete criteria: instability $>0.15$, bias $>0.10$, missingness $>30\%$, schedule delay $>2$ days. These thresholds (Table~\ref{tab:monitoring}) enforced via monitoring transform quality into engineering constraint.
+
+\textit{Milestone-Driven Sprints:} The 4-week timeline with weekly milestones (M1-M4) provides clear checkpoints. Each milestone has defined deliverables and success criteria, helping us catch issues early and make corrections.
+
+\textit{Architecture as Fairness:} Robustness and fairness are built into the architecture (M2, M5, M6 modules), not added after the fact. The implementation plan assigns specific team members to each module, ensuring accountability.
+
+\textit{Standards-Based Defensibility:} Grounding design in ISO 9000, CMMI, Six Sigma (Table~\ref{tab:standards}) creates a defensible architecture. The weekly Monday meetings and professor reviews ensure continuous alignment with quality standards.
+
+\textbf{Implementation Readiness:} Our team of 4 members with complementary skills (programming, coordination, data analysis, quality assurance) is ready to execute the plan. The clear role definitions prevent overlap and ensure all technical and managerial needs are covered.
+
+The GitHub repository structure maps directly to the 7-module architecture, making parallel development and integration easier. Weekly communication protocols (Monday meetings, daily Slack updates, GitHub commits) help maintain team cohesion and visibility. Risk management strategies address both technical challenges (emergent behaviors, feature bias, data quality) and implementation challenges (schedule delays, team availability, accuracy targets) with predefined responses, reducing time spent making decisions during crises.
+
+\textbf{Path to Success:} As we move from planning (this workshop) to execution (4-week sprint), the structures we've established---monitoring thresholds, quality gates, role responsibilities, milestone criteria, communication protocols---will help us deliver a reliable, equitable system that serves clinical needs. By December 5, 2025, we'll have transformed our architectural vision into working implementation, validated against both technical metrics (C-index $>0.70$) and equity standards (gap $<0.10$), making sure clinicians can trust our system for these life-critical HCT survival predictions.
