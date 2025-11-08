@@ -151,3 +151,24 @@ Risk monitoring table with specific metrics, alert thresholds, and response prot
 * Team develops teamwork and project management skills
 
 ## 6. Repository Structure
+```
+HCT-Survival-Prediction/
+|-- data/
+|   |-- raw/           # Original dataset
+|   |-- processed/     # Cleaned data
+|   +-- predictions/   # Final predictions.csv
+|-- src/
+|   |-- preprocessing.py    # M1: Data Preprocessing
+|   |-- equity.py           # M2: Equity Analysis
+|   |-- features.py         # M3: Feature Selection
+|   |-- models.py           # M4: Predictive Modeling
+|   |-- calibration.py      # M5: Fairness Calibration
+|   |-- uncertainty.py      # M6: Uncertainty Quantification
+|   +-- outputs.py          # M7: System Outputs
+|-- tests/                  # Unit and integration tests
+|-- docs/
+|   |-- reports/            # Analysis and technical reports
+|   +-- presentation/       # Final presentation
+|-- requirements.txt        # Python dependencies
++-- README.md               # Setup and usage instructions
+```
