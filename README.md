@@ -51,21 +51,22 @@ Welcome to the Equity in post-HCT survival predictions project! This project was
 1. **Workshop 1:** Analysis of a kaggle competition.
     - Folder: `!1_workshop`
     - Description: This folder contains all materials for Workshop No. 1. It includes a systems analysis report (with elements, relationships, and complexity discussion) that describes the competition overview, visual diagrams, latex source code, and the final PDF report as  required by the assignment.
-    - Files: PENDING
+     - Key Findings: System complexity, non-linear behavior, Stratified C-Index constraints, sensitivity to patient variables
 
 2. **Workshop 2:** Kaggle Systems Design
     - Folder: `!2_workshop`
     - Description: This folder contains the collaborative work of four team members for Workshop No. 2. It includes a comprehensive system design document analyzing a Kaggle competition, exploring its elements, relationships, sensitivity considerations, and chaos theory implications. The design focuses on a modular pipeline architecture that addresses equity considerations throughout the prediction pipeline.
+    - Key Deliverables: Modular architecture (M1-M7), system diagrams, technical stack (Python, XGBoost, AIF360), implementation patterns
     - Files: System Design Document (PDF), LaTeX source code, System Architecture Diagrams, References, Step-by-Step Development Guide, README.md
 
 3. **Workshop 3:**  Robust System Design and Project Management
     - Folder: `3_workshop`
     - Description: Refined architecture with robust principles, comprehensive risk analysis (6 risks with mitigations), and 4-week project management plan (Nov 8 - Dec 5, 2025). Aligned with ISO 9000, CMMI Level 3, and Six Sigma standards.
     - Key Deliverables:
-    - - Risk monitoring framework with thresholds and protocols
-    - - Team roles: Programmer (20-25h), Coordinator (5-8h), Data Analyst (15-20h), Quality Specialist (10-15h)
-    - - Weekly milestones (M1-M4) with success criteria
-    - - Technical goals: C-index >0.70, fairness gap <0.10
+      - Risk monitoring framework with thresholds and protocols
+      - Team roles: Programmer (20-25h), Coordinator (5-8h), Data Analyst (15-20h), Quality Specialist (10-15h)
+      - Weekly milestones (M1-M4) with success criteria
+      - Technical goals: C-index >0.70, fairness gap <0.10
 
 ##Final Version:
 
