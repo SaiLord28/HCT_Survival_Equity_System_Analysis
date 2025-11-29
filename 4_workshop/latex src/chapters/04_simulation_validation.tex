@@ -48,11 +48,11 @@ The following metrics were defined for each simulation:
 All simulations were executed in Google Colab with Python 3.12.  The required dependencies are documented in \texttt{requirements.txt} within the \texttt{Workshop\_4\_Simulation} folder:
 
 \begin{verbatim}
-pandas>=2.0. 0
+pandas>=2.0.0
 numpy>=1.24.0
-scikit-learn>=1. 3.0
-matplotlib>=3.7. 0
-seaborn>=0.12. 0
+scikit-learn>=1.3.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
 shap>=0.42.0
 \end{verbatim}
 
@@ -148,6 +148,8 @@ CV = \frac{\sigma_{accuracy}}{\mu_{accuracy}} = \frac{0.0081}{0.6784} = 0.0120
 Since $CV = 0.0120 < 0.15$ (threshold), the model demonstrates \textbf{stable behavior} across different random initializations.  This stability indicates that the predictive core (Module M4 in our architecture) can produce consistent outputs regardless of training randomness.
 
 However, the mean accuracy of 0.6784 falls below the target of 0.70, indicating that while the model is stable, further optimization or feature engineering is required to meet performance targets.  This aligns with challenges documented in similar HCT prediction studies \cite{mdpi_cancers, frontiers_ai_hct}.
+
+\textbf{Accuracy Gap Analysis:} The 2.16\% gap between achieved accuracy (67.84\%) and target (70\%) is attributed to three factors: (1) inherent complexity of HCT outcomes involving multiple interacting biological systems, (2) class distribution with 53\% events creating prediction challenges, and (3) conservative hyperparameter choices prioritizing stability over maximum performance.  Planned improvements include hyperparameter optimization via GridSearchCV, feature selection using recursive feature elimination, and evaluation of alternative algorithms such as XGBoost and CatBoost \cite{neptune_boosting}.
 
 \subsection{Chaos Sensitivity Analysis: The Butterfly Effect}
 
@@ -253,7 +255,7 @@ def apply_rules(self, recovery_factor, progression_factor, chaos_factor):
     
     for i in range(self.grid_size):
         for j in range(self.grid_size):
-            current_state = self. grid[i, j]
+            current_state = self.grid[i, j]
             neighbors_event = self._count_neighbors(i, j, state=2)
             neighbors_stable = self._count_neighbors(i, j, state=0)
             neighbors_risk = self._count_neighbors(i, j, state=1)
@@ -301,6 +303,8 @@ Event & 850 & 53.1\% \\
 \caption{Initial state distribution for the cellular automata simulation.}
 \label{tab:ca_initial}
 \end{table}
+
+\textbf{Design Decision:} The initial conditions were intentionally calibrated using real event rates (53.1\%) rather than arbitrary values. This decision ensures clinical relevance but places the system in a high-risk regime.  The purpose was to demonstrate the ``critical threshold'' phenomenon—a key insight for understanding system behavior under realistic worst-case scenarios.  Future work will explore subcritical regimes (initial event rates $<30\%$) where parameter sensitivity becomes more pronounced and intervention strategies can be meaningfully evaluated. 
 
 \subsection{Simulation Results: Emergent Behavior and System Collapse}
 
@@ -370,6 +374,22 @@ Parameter sensitivity analysis confirmed that \textbf{no parameter configuration
 
 This insensitivity to parameters indicates that the system operates in a \textit{supercritical regime} where the initial conditions dominate the dynamics. 
 
+\subsection{Subcritical Regime Exploration}
+
+Based on the observed phase transition behavior and the complete system collapse at 53.1\% initial event rate, we hypothesize that the system would exhibit fundamentally different dynamics under lower initial conditions.  Theoretical analysis of absorbing state systems suggests three distinct regimes:
+
+\begin{itemize}
+    \item \textbf{Supercritical regime ($>$50\% initial events):} Rapid and inevitable collapse to 100\% absorption, insensitive to parameter variations.  This is the regime observed in our simulation with real clinical data.
+    
+    \item \textbf{Critical regime (20--50\% initial events):} Delayed collapse with moderate sensitivity to recovery and progression parameters. The system may reach full absorption but over extended time horizons.
+    
+    \item \textbf{Subcritical regime ($<$20\% initial events):} Mixed equilibrium states become possible, where the system stabilizes with a proportion of patients remaining in Stable or At Risk states. Parameter sensitivity is highest in this regime, making intervention strategies meaningful.
+\end{itemize}
+
+The identification of these regimes has direct clinical implications: transplant programs managing high-risk cohorts (supercritical) face fundamentally different challenges than those with lower-risk populations (subcritical). For supercritical populations, the simulation suggests that \textbf{prevention and early intervention} are more effective than reactive treatment adjustments—once the cascade begins, parameter modifications cannot reverse the trajectory. 
+
+Formal validation of regime boundaries through systematic simulation across initial conditions is planned for future work. 
+
 \subsection{Visualization of Emergent Behavior}
 
 Figure \ref{fig:sim2_results} illustrates the temporal evolution and state transitions:
@@ -436,6 +456,20 @@ The simulations inform several architectural refinements:
     
     \item \textbf{Fairness Considerations:} The model must ensure equitable predictions across demographic groups, distinguishing between biological variability and systematic bias \cite{fairml, aif360_github}.
 \end{itemize}
+
+\subsection{Preliminary Equity Considerations}
+
+Given that the Kaggle competition focuses on ``Equity in Post-HCT Survival Predictions,'' fairness analysis is a critical component of the system. While comprehensive demographic parity evaluation is planned for future work, preliminary examination of the simulation results reveals important considerations:
+
+\begin{enumerate}
+    \item \textbf{Feature Influence:} The SHAP analysis (Figure \ref{fig:shap_analysis}) shows that \texttt{race\_group} appears among the top 20 influential features, suggesting potential demographic influence on predictions that requires careful evaluation.
+    
+    \item \textbf{Subgroup Performance:} The current simulation does not disaggregate accuracy metrics by demographic groups.  This is a known limitation that will be addressed using stratified evaluation in subsequent phases.
+    
+    \item \textbf{Fairness Metrics:} Future iterations will implement demographic parity, equalized odds, and calibration metrics using the Fairlearn framework \cite{fairlearn_org, aif360_github} to ensure the model does not systematically disadvantage protected groups.
+\end{enumerate}
+
+The cellular automata simulation also raises equity considerations: if certain demographic groups have higher initial ``At Risk'' rates due to systemic healthcare disparities, the cascade failure phenomenon would disproportionately affect these populations—a finding that underscores the importance of early intervention strategies \cite{jama_ai_medicine}. 
 
 \section{Comparison of Simulation Approaches}
 
