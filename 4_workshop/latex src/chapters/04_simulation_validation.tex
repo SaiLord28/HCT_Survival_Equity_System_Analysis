@@ -1,0 +1,526 @@
+\chapter{Simulation and Validation of the Modular Architecture}
+\label{chap:simulation}
+
+This chapter presents the computational simulation phase of the HCT Survival Equity System, as required by Workshop 4. Following the systems analysis conducted in Workshop 1, the architectural design defined in Workshop 2, and the project management strategies from Workshop 3, we now validate the system through two distinct simulation scenarios: a data-driven machine learning approach and an event-based cellular automata model.  Following the incremental sprint structure defined in Workshop 3, the simulation phase was organized into discrete deliverables for each scenario.
+
+\section{Data Preparation}
+
+The simulation phase utilizes the CIBMTR dataset from the Kaggle competition ``Equity in Post-HCT Survival Predictions'' \cite{kaggle_competition}.  The dataset was preprocessed according to the following specifications:
+
+\begin{itemize}
+    \item \textbf{Dataset Size:} 28,803 patient records with 59 clinical features. 
+    \item \textbf{Target Variable:} Event-Free Survival (EFS), binary classification where 1 indicates an event (death or relapse) and 0 indicates censoring.
+    \item \textbf{Event Rate:} 53.12\% of patients experienced an event in the observed period.
+    \item \textbf{Missing Values:} Handled through median imputation for numerical features and mode imputation for categorical features \cite{datacamp_preprocessing, geeksforgeeks_preprocessing}.
+    \item \textbf{Feature Engineering:} Categorical variables were label-encoded and numerical features were standardized using z-score normalization \cite{pushkarna_preprocessing}.
+\end{itemize}
+
+\section{Simulation Planning}
+
+Two simulation scenarios were designed to validate different aspects of the system architecture, following the Model-Based Systems Engineering (MBSE) paradigm \cite{mlpipeline_arxiv}:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|p{3.5cm}|p{5cm}|p{6cm}|}
+\hline
+\textbf{Scenario} & \textbf{Methodology} & \textbf{Validation Objective} \\
+\hline
+\textbf{Scenario 1:} Data-Driven Simulation & Gradient Boosting Machine (GBM) with iterative training and perturbation analysis & Validate model stability, identify feature importance, and analyze sensitivity to input noise (chaos exploration).  \\
+\hline
+\textbf{Scenario 2:} Event-Based Simulation & Cellular Automata with patient state transitions on a 2D grid & Model emergent behaviors in patient outcomes, explore absorbing states, and validate system response to parameter variations. \\
+\hline
+\end{tabular}
+\caption{Simulation scenarios aligned with the system architecture from Workshop 2.}
+\label{tab:sim_scenarios}
+\end{table}
+
+\subsection{Success Metrics}
+
+The following metrics were defined for each simulation:
+
+\begin{itemize}
+    \item \textbf{Scenario 1:} Accuracy $\geq 0.70$, AUC-ROC $\geq 0.70$, Coefficient of Variation (CV) $\leq 0.15$ for stability \cite{scikit_learn_cv}.
+    \item \textbf{Scenario 2:} Observation of emergent patterns, identification of phase transitions, and sensitivity analysis of transition parameters. 
+\end{itemize}
+
+\subsection{Environment Configuration}
+
+All simulations were executed in Google Colab with Python 3.12.  The required dependencies are documented in \texttt{requirements.txt} within the \texttt{Workshop\_4\_Simulation} folder:
+
+\begin{verbatim}
+pandas>=2.0. 0
+numpy>=1.24.0
+scikit-learn>=1. 3.0
+matplotlib>=3.7. 0
+seaborn>=0.12. 0
+shap>=0.42.0
+\end{verbatim}
+
+\section{Scenario 1: Data-Driven Machine Learning Simulation}
+
+\subsection{Model Selection: Gradient Boosting Machine}
+
+Gradient Boosting Machine (GBM) was selected as the predictive algorithm for the following reasons \cite{geeksforgeeks_boosting, neptune_boosting}:
+
+\begin{enumerate}
+    \item \textbf{Handling Mixed Data Types:} The CIBMTR dataset contains both numerical (e.g., \texttt{age\_at\_hct}, \texttt{donor\_age}) and categorical features (e.g., \texttt{disease\_type}, \texttt{graft\_type}).  GBM handles heterogeneous data effectively without requiring extensive feature transformation.
+    
+    \item \textbf{Robustness to Overfitting:} Through regularization parameters (\texttt{learning\_rate}, \texttt{max\_depth}), GBM provides control over model complexity, essential for medical datasets where generalization is critical.
+    
+    \item \textbf{Interpretability:} GBM provides native feature importance rankings, enabling clinical interpretation of which variables drive predictions—a requirement for healthcare applications \cite{frontiers_ai_hct}.
+    
+    \item \textbf{Ensemble Learning:} As an ensemble method, GBM combines multiple weak learners (decision trees), reducing variance and providing more stable predictions across different data splits. 
+\end{enumerate}
+
+\subsection{Implementation Details}
+
+The GBM model was configured with the following hyperparameters:
+
+\begin{verbatim}
+GradientBoostingClassifier(
+    n_estimators=100,
+    max_depth=5,
+    learning_rate=0.1,
+    random_state=variable  # Changed per iteration
+)
+\end{verbatim}
+
+The simulation executed 5 training iterations with different random seeds to assess model stability:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{cccc}
+\toprule
+\textbf{Iteration} & \textbf{Random Seed} & \textbf{Accuracy} & \textbf{AUC-ROC} \\
+\midrule
+1 & 42 & 0.6892 & 0.7554 \\
+2 & 52 & 0.6816 & 0.7374 \\
+3 & 62 & 0.6660 & 0.7262 \\
+4 & 72 & 0.6823 & 0.7460 \\
+5 & 82 & 0.6727 & 0.7302 \\
+\midrule
+\textbf{Mean} & -- & \textbf{0.6784} & \textbf{0.7391} \\
+\textbf{Std Dev} & -- & 0.0081 & 0.0106 \\
+\bottomrule
+\end{tabular}
+\caption{GBM performance across 5 training iterations.}
+\label{tab:gbm_results}
+\end{table}
+
+\subsection{Code Implementation: GBM Training Loop}
+
+The following code snippet shows the core GBM training loop with stability analysis:
+
+\begin{lstlisting}[language=Python, caption={GBM Training with Stability Analysis}]
+# Train multiple iterations to assess stability
+for i in range(N_ITERATIONS):
+    seed = RANDOM_STATE + i * 10
+    
+    # Split with stratification to maintain class balance
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=seed, stratify=y
+    )
+    
+    # Configure GBM with regularization
+    model = GradientBoostingClassifier(
+        n_estimators=100,
+        max_depth=5,           # Limit depth to prevent overfitting
+        learning_rate=0.1,     # Conservative learning rate
+        random_state=seed
+    )
+    model.fit(X_train, y_train)
+    
+    # Evaluate performance
+    y_pred = model. predict(X_test)
+    results['accuracy'].append(accuracy_score(y_test, y_pred))
+    results['auc']. append(roc_auc_score(y_test, 
+                          model.predict_proba(X_test)[:, 1]))
+\end{lstlisting}
+
+\subsection{Variability Analysis}
+
+The coefficient of variation (CV) was calculated to assess model stability:
+
+\begin{equation}
+CV = \frac{\sigma_{accuracy}}{\mu_{accuracy}} = \frac{0.0081}{0.6784} = 0.0120
+\end{equation}
+
+Since $CV = 0.0120 < 0.15$ (threshold), the model demonstrates \textbf{stable behavior} across different random initializations.  This stability indicates that the predictive core (Module M4 in our architecture) can produce consistent outputs regardless of training randomness.
+
+However, the mean accuracy of 0.6784 falls below the target of 0.70, indicating that while the model is stable, further optimization or feature engineering is required to meet performance targets.  This aligns with challenges documented in similar HCT prediction studies \cite{mdpi_cancers, frontiers_ai_hct}.
+
+\subsection{Chaos Sensitivity Analysis: The Butterfly Effect}
+
+To explore sensitivity to initial conditions—a hallmark of chaotic systems—we introduced controlled Gaussian noise to the test data and measured prediction changes:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{cccc}
+\toprule
+\textbf{Perturbation Level} & \textbf{Accuracy} & \textbf{Predictions Changed} & \textbf{Accuracy Drop} \\
+\midrule
+1\% noise & 0.6882 & 0.5\% & 0.0010 \\
+5\% noise & 0.6901 & 1.5\% & -0.0009 \\
+10\% noise & 0.6896 & 2.9\% & -0.0004 \\
+15\% noise & 0.6833 & 4.7\% & 0.0059 \\
+\bottomrule
+\end{tabular}
+\caption{Model sensitivity to input perturbations. }
+\label{tab:chaos_sensitivity}
+\end{table}
+
+\textbf{Key Finding:} The model exhibits \textit{graceful degradation} under noise.  Even with 15\% Gaussian perturbation, only 4.7\% of predictions changed, and accuracy remained within 1\% of baseline. This robustness suggests that the GBM model is resilient to measurement noise—critical for clinical settings where data collection may introduce small errors \cite{jama_ai_medicine}.
+
+\subsection{Feature Importance Analysis with SHAP}
+
+To provide model interpretability, SHAP (SHapley Additive exPlanations) values were computed for the best-performing model (Iteration 1, AUC = 0.7554) \cite{shap_docs, shap_github, christoph_shap}.  Figure \ref{fig:shap_analysis} presents the feature importance analysis. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{figures/shap_simulation1.png}
+    \caption{SHAP feature importance for the GBM model.  Features are ranked by their mean absolute SHAP value.  The color gradient indicates feature values (blue = low, red = high), and horizontal position shows impact on model output.}
+    \label{fig:shap_analysis}
+\end{figure}
+
+The top 5 most influential features identified were:
+
+\begin{enumerate}
+    \item \textbf{conditioning\_intensity:} The intensity of pre-transplant conditioning regimen shows the highest impact, with higher intensity associated with increased event risk.
+    \item \textbf{sex\_match:} Donor-recipient sex matching significantly influences outcomes. 
+    \item \textbf{year\_hct:} The year of transplant, reflecting improvements in medical protocols over time \cite{mdpi_cancers}.
+    \item \textbf{age\_at\_hct:} Patient age at transplant, with older patients showing higher event risk \cite{uptodate_hct}. 
+    \item \textbf{prim\_disease\_hct:} The primary disease requiring transplantation \cite{ash_transplant_all}.
+\end{enumerate}
+
+These findings are consistent with clinical literature on HCT outcomes, validating the model's ability to capture medically relevant patterns \cite{astct_simplification}.
+
+\subsection{Simulation 1 Results Visualization}
+
+Figure \ref{fig:sim1_results} presents the comprehensive results of the data-driven simulation:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/simulation1_results.png}
+    \caption{Simulation 1 results: (Top-left) Accuracy variability across iterations with mean and target lines.  (Top-right) AUC variability showing discrimination capability. (Bottom-left) Chaos sensitivity demonstrating model robustness to perturbations. (Bottom-right) Top 10 features by GBM importance.}
+    \label{fig:sim1_results}
+\end{figure}
+
+\section{Scenario 2: Event-Based Cellular Automata Simulation}
+
+\subsection{Cellular Automata Model Design}
+
+Cellular Automata (CA) was selected for the event-based simulation to model the spatial and temporal dynamics of patient outcomes. Unlike traditional statistical models, CA captures \textit{emergent behaviors} arising from local interactions—analogous to how individual patient outcomes can influence neighboring patients in a hospital cohort through shared resources, infection risks, or treatment protocols. 
+
+This approach aligns with research on computational modeling in stem cell transplantation \cite{frontiers_ai_hct} and biological systems modeling where complex behaviors emerge from simple local rules. 
+
+\subsubsection{Model Specification}
+
+\begin{itemize}
+    \item \textbf{Grid Structure:} 40 × 40 toroidal grid (1,600 cells), where each cell represents a patient. 
+    \item \textbf{State Space:} Three discrete states:
+    \begin{itemize}
+        \item State 0 (Stable): Patient without complications. 
+        \item State 1 (At Risk): Patient with complications requiring monitoring.
+        \item State 2 (Event): Death or relapse—\textit{absorbing state}. 
+    \end{itemize}
+    \item \textbf{Neighborhood:} Moore neighborhood (8 adjacent cells) with periodic boundary conditions.
+    \item \textbf{Time Steps:} 80 discrete iterations representing post-transplant monitoring periods.
+\end{itemize}
+
+\subsubsection{Transition Rules}
+
+The CA implements probabilistic transition rules based on neighborhood states:
+
+\begin{enumerate}
+    \item \textbf{Stable → At Risk:} Occurs if $\geq 3$ neighbors are At Risk, or $\geq 2$ neighbors have Events, or with random probability $p_{chaos} = 0.03$.
+    
+    \item \textbf{At Risk → Event:} Occurs if $\geq 4$ neighbors have Events, or with random probability $p_{progression} = 0.12$.
+    
+    \item \textbf{At Risk → Stable:} Occurs if $\geq 5$ neighbors are Stable AND random probability $p_{recovery} = 0.08$ is satisfied.
+    
+    \item \textbf{Event → Event:} Absorbing state with no transitions out (death/relapse is irreversible).
+\end{enumerate}
+
+These rules model the biological reality of GVHD propagation \cite{uptodate_gvhd, ash_chronic_gvhd}, where complications can spread through inflammatory cascades and systemic responses. 
+
+\subsection{Code Implementation: Cellular Automata Rules}
+
+The following code snippet shows the core transition logic for the cellular automata:
+
+\begin{lstlisting}[language=Python, caption={Cellular Automata Transition Rules}]
+def apply_rules(self, recovery_factor, progression_factor, chaos_factor):
+    new_grid = self.grid.copy()
+    
+    for i in range(self.grid_size):
+        for j in range(self.grid_size):
+            current_state = self. grid[i, j]
+            neighbors_event = self._count_neighbors(i, j, state=2)
+            neighbors_stable = self._count_neighbors(i, j, state=0)
+            neighbors_risk = self._count_neighbors(i, j, state=1)
+            
+            if current_state == 0:  # Stable
+                # Transition to At Risk if surrounded by complications
+                if neighbors_risk >= 3 or neighbors_event >= 2:
+                    new_grid[i, j] = 1
+                elif np.random.random() < chaos_factor:
+                    new_grid[i, j] = 1  # Random perturbation
+                    
+            elif current_state == 1:  # At Risk
+                # Absorbing state transition
+                if neighbors_event >= 4:
+                    new_grid[i, j] = 2  # Event (irreversible)
+                elif np.random.random() < progression_factor:
+                    new_grid[i, j] = 2
+                # Recovery possibility
+                elif neighbors_stable >= 5:
+                    if np.random.random() < recovery_factor:
+                        new_grid[i, j] = 0
+                        
+            # State 2 (Event) is absorbing - no transitions out
+    
+    self.grid = new_grid
+\end{lstlisting}
+
+\subsection{Initial Conditions}
+
+The initial grid state was calibrated using the real event rate from the CIBMTR dataset \cite{kaggle_competition}:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{State} & \textbf{Count} & \textbf{Percentage} \\
+\midrule
+Stable & 186 & 11.6\% \\
+At Risk & 564 & 35.2\% \\
+Event & 850 & 53.1\% \\
+\midrule
+\textbf{Total} & 1,600 & 100.0\% \\
+\bottomrule
+\end{tabular}
+\caption{Initial state distribution for the cellular automata simulation.}
+\label{tab:ca_initial}
+\end{table}
+
+\subsection{Simulation Results: Emergent Behavior and System Collapse}
+
+The cellular automata simulation revealed a critical emergent phenomenon: \textbf{complete system collapse to the absorbing state}. 
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{Metric} & \textbf{Initial} & \textbf{Final (Step 80)} \\
+\midrule
+Event Rate & 53.12\% & 100.00\% \\
+Stable Patients & 186 & 0 \\
+At Risk Patients & 564 & 0 \\
+Event Patients & 850 & 1,600 \\
+\bottomrule
+\end{tabular}
+\caption{Cellular automata state evolution from initial to final step.}
+\label{tab:ca_evolution}
+\end{table}
+
+\textbf{Key Observation:} The system reached 100\% event rate by Step 20 and remained in this state for the remaining 60 steps. This represents a \textit{phase transition} from a mixed-state system to a fully absorbed state. 
+
+\subsection{Scenario Comparison}
+
+Four parameter scenarios were tested to understand system sensitivity:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Scenario} & \textbf{Recovery} & \textbf{Progression} & \textbf{Chaos} & \textbf{Final Event Rate} \\
+\midrule
+Baseline & 0.08 & 0.12 & 0.03 & 100.0\% \\
+High Recovery & 0.15 & 0.12 & 0.03 & 100.0\% \\
+High Progression & 0.08 & 0.20 & 0.03 & 100.0\% \\
+High Chaos & 0.08 & 0.12 & 0.10 & 100.0\% \\
+\bottomrule
+\end{tabular}
+\caption{Scenario comparison for cellular automata simulation.}
+\label{tab:ca_scenarios}
+\end{table}
+
+\subsection{Analysis: The Absorbing State Phenomenon}
+
+The convergence to 100\% events across all scenarios demonstrates a fundamental property of systems with absorbing states: \textbf{once a critical threshold is crossed, collapse becomes inevitable}.
+
+This behavior is explained by three factors:
+
+\begin{enumerate}
+    \item \textbf{High Initial Event Rate:} Starting with 53.1\% events (calibrated from real data) places the system near or beyond the critical threshold for cascade failure.  This reflects the clinical reality documented in HCT literature \cite{mdpi_cancers}. 
+    
+    \item \textbf{Absorbing State Dynamics:} Unlike Conway's Game of Life where cells can transition bidirectionally, State 2 (Event) is irreversible. Each event creates permanent ``damage'' that accumulates—mirroring the irreversibility of patient mortality. 
+    
+    \item \textbf{Neighborhood Influence:} The transition rules create positive feedback loops—as more neighbors experience events, the probability of remaining patients transitioning to events increases exponentially. This models biological phenomena such as GVHD cascades \cite{uptodate_gvhd} and clonal dynamics in relapse \cite{stmcls_clonality}.
+\end{enumerate}
+
+\subsection{Sensitivity Analysis}
+
+Parameter sensitivity analysis confirmed that \textbf{no parameter configuration could prevent system collapse} given the initial conditions:
+
+\begin{itemize}
+    \item \textbf{Recovery Factor:} Range [0.02, 0.20] → Final Event Rate: 100\%
+    \item \textbf{Progression Factor:} Range [0.05, 0.25] → Final Event Rate: 100\%
+    \item \textbf{Chaos Factor:} Range [0.01, 0.15] → Final Event Rate: 100\%
+\end{itemize}
+
+This insensitivity to parameters indicates that the system operates in a \textit{supercritical regime} where the initial conditions dominate the dynamics. 
+
+\subsection{Visualization of Emergent Behavior}
+
+Figure \ref{fig:sim2_results} illustrates the temporal evolution and state transitions:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/simulation2_results.png}
+    \caption{Simulation 2 results: (Top-left) Temporal evolution showing rapid convergence to 100\% events. (Top-right) Scenario comparison demonstrating uniform collapse across all parameter settings. (Bottom) Initial and final grid states visualizing the phase transition from mixed states to complete absorption.}
+    \label{fig:sim2_results}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/sensitivity_simulation2.png}
+    \caption{Parameter sensitivity analysis showing that all three factors (Recovery, Progression, Chaos) result in 100\% final event rate regardless of parameter values, indicating operation in a supercritical regime.}
+    \label{fig:sensitivity_analysis}
+\end{figure}
+
+\section{System Workflow Validation}
+
+Both simulations validate critical aspects of the system architecture defined in Workshop 2:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|p{3cm}|p{5.5cm}|p{5.5cm}|}
+\hline
+\textbf{Module} & \textbf{Simulation 1 Validation} & \textbf{Simulation 2 Validation} \\
+\hline
+\textbf{M1: Data Preprocessing} & Successfully handled missing values and feature encoding for 28,803 records \cite{pushkarna_preprocessing}. & Extracted event rate (53.1\%) for CA initialization. \\
+\hline
+\textbf{M4: Predictive Core} & GBM achieved AUC = 0.7391 with stable performance (CV = 0.012). & N/A (CA does not use ML).  \\
+\hline
+\textbf{M6: Uncertainty Quantification} & Chaos sensitivity analysis showed 4.7\% prediction change at 15\% noise.  & CA demonstrated high uncertainty—complete collapse despite parameter variations. \\
+\hline
+\textbf{M7: System Outputs} & SHAP analysis provided interpretable feature rankings \cite{shap_docs}. & Visual grid evolution provides intuitive outcome representation. \\
+\hline
+\end{tabular}
+\caption{System module validation through simulation scenarios.}
+\label{tab:module_validation}
+\end{table}
+
+\section{Complexity and Chaos Exploration}
+
+\subsection{Emergent Behaviors Identified}
+
+\begin{enumerate}
+    \item \textbf{Simulation 1 - Graceful Degradation:} The GBM model exhibits robust behavior under input perturbations, suggesting that the predictive system can handle real-world data quality issues common in clinical settings \cite{jama_ai_medicine}.
+    
+    \item \textbf{Simulation 2 - Cascade Failure:} The cellular automata revealed that patient populations with high initial event rates are susceptible to complete system collapse—a critical insight for resource allocation in transplant programs \cite{frontiers_ai_hct}.
+    
+    \item \textbf{Simulation 2 - Critical Threshold:} The existence of a ``tipping point'' beyond which recovery becomes impossible, regardless of intervention parameters, demonstrates the chaotic nature of transplant outcomes described in clonality research \cite{stmcls_clonality}.
+\end{enumerate}
+
+\subsection{Implications for System Design}
+
+The simulations inform several architectural refinements:
+
+\begin{itemize}
+    \item \textbf{Early Intervention Module:} Given the cascade failure phenomenon, the system should prioritize early identification of at-risk patients before the critical threshold is reached.
+    
+    \item \textbf{Uncertainty Communication:} The M6 module must clearly communicate when the system operates in high-uncertainty regimes where predictions become unreliable \cite{fairlearn_org}.
+    
+    \item \textbf{Threshold Monitoring:} Real-time monitoring of the ``At Risk'' population percentage could trigger alerts when approaching critical thresholds. 
+    
+    \item \textbf{Fairness Considerations:} The model must ensure equitable predictions across demographic groups, distinguishing between biological variability and systematic bias \cite{fairml, aif360_github}.
+\end{itemize}
+
+\section{Comparison of Simulation Approaches}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|p{4cm}|p{5.5cm}|p{5cm}|}
+\hline
+\textbf{Aspect} & \textbf{Scenario 1 (Data-Driven)} & \textbf{Scenario 2 (Event-Based)} \\
+\hline
+\textbf{Methodology} & Supervised learning with GBM \cite{geeksforgeeks_boosting} & Cellular automata with state transitions \\
+\hline
+\textbf{Primary Output} & Probability of event for individual patients & Population-level dynamics and patterns \\
+\hline
+\textbf{Sensitivity} & Robust to 15\% input noise & Insensitive to parameter changes (supercritical regime) \\
+\hline
+\textbf{Interpretability} & SHAP values for feature importance \cite{christoph_shap} & Visual grid evolution \\
+\hline
+\textbf{Chaos Behavior} & Controlled, predictable degradation & Cascade failure, phase transitions \\
+\hline
+\textbf{Clinical Utility} & Individual risk stratification & System-level capacity planning \\
+\hline
+\end{tabular}
+\caption{Comparison of data-driven and event-based simulation approaches.}
+\label{tab:approach_comparison}
+\end{table}
+
+\section{Simulation Execution Summary}
+
+Table \ref{tab:exec_summary} provides a statistical summary of both simulation executions:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{lcc}
+\toprule
+\textbf{Metric} & \textbf{Simulation 1} & \textbf{Simulation 2} \\
+\midrule
+Execution Time & $\sim$45 seconds & $\sim$12 seconds \\
+Data Points Processed & 28,803 patients & 1,600 cells $\times$ 80 steps \\
+Iterations/Scenarios & 5 & 4 \\
+Output Files Generated & 2 (PNG) & 2 (PNG) \\
+Stability Check & PASS (CV = 0.012) & N/A \\
+Accuracy Target & FAIL (67.8\% $<$ 70\%) & N/A \\
+Emergent Behavior & Graceful degradation & Cascade collapse \\
+\bottomrule
+\end{tabular}
+\caption{Simulation execution summary.}
+\label{tab:exec_summary}
+\end{table}
+
+\section{Limitations and Future Work}
+
+\subsection{Current Limitations}
+
+\begin{enumerate}
+    \item \textbf{Cellular Automata Calibration:} The CA model requires further calibration to identify initial conditions that produce mixed equilibrium states rather than complete collapse.
+    
+    \item \textbf{Accuracy Gap:} The GBM model achieved 67.84\% accuracy, below the 70\% target.  Hyperparameter optimization and feature engineering are needed. 
+    
+    \item \textbf{Temporal Dynamics:} Neither simulation incorporates time-to-event analysis, which is critical for survival prediction \cite{scikit_survival_intro, lifelines_docs}.
+    
+    \item \textbf{Subgroup Analysis:} Equity analysis across demographic groups was not included in this simulation phase \cite{fairlearn_org}.
+\end{enumerate}
+
+\subsection{Future Work}
+
+\begin{enumerate}
+    \item \textbf{Subcritical CA Exploration:} Test initial conditions with lower event rates ($<30\%$) to identify regimes where parameter sensitivity emerges.
+    
+    \item \textbf{Hybrid Model:} Combine GBM predictions with CA dynamics to create a multi-scale simulation framework.
+    
+    \item \textbf{CI/CD Integration:} Integrate simulation engines into the Continuous Integration pipeline to automatically stress-test the model with every code update \cite{datacamp_mlops}.
+    
+    \item \textbf{Survival Analysis:} Extend Scenario 1 to incorporate Cox proportional hazards or survival forests for time-to-event modeling \cite{geeksforgeeks_cox, scikit_survival_rsf}.
+    
+    \item \textbf{Fairness Metrics:} Implement demographic parity and equalized odds metrics using the Fairlearn framework \cite{fairlearn_org, aif360_github}.
+\end{enumerate}
+
+\section{Conclusions}
+
+This workshop successfully implemented and executed two complementary simulation scenarios for the HCT Survival Equity System:
+
+\begin{enumerate}
+    \item \textbf{Scenario 1 (Data-Driven):} Demonstrated that Gradient Boosting provides a stable (CV = 0.012) and interpretable predictive model with AUC = 0.7391.  The chaos sensitivity analysis confirmed robustness to input perturbations up to 15\% noise.
+    
+    \item \textbf{Scenario 2 (Event-Based):} Revealed critical emergent behavior—cascade failure leading to 100\% event absorption—demonstrating the chaotic nature of transplant outcomes when initial conditions exceed critical thresholds. 
+\end{enumerate}
+
+Both simulations validate the system architecture designed in Workshop 2 and provide empirical evidence for the necessity of uncertainty quantification (M6) and early intervention capabilities.  The findings will inform the final system implementation in subsequent project phases. 
